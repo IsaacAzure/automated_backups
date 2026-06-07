@@ -1,0 +1,19 @@
+#!/bin/bash
+# ─────────────────────────────────────────────────────────
+#  backup_tool — anacron daily job
+#
+#  Install:
+#      sudo cp cron/backup_tool /etc/cron.daily/backup_tool
+#      sudo chmod +x /etc/cron.daily/backup_tool
+#
+#  How it works:
+#      anacron runs scripts in /etc/cron.daily/ once per day.
+#      Unlike cron, anacron tracks the last run time and catches
+#      up on missed jobs the next time the device boots.
+#      Ideal for personal devices that are not always powered on.
+#
+#  Runs as: root (required for btrfs subvolume snapshot)
+#  Logs to: /var/log/backup_tool/backup.log
+# ─────────────────────────────────────────────────────────
+
+/usr/bin/python3 /opt/backup_tool/backup.py

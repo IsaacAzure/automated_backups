@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════════
+#  backup_tool — config.yaml
+#  All settings for the backup pipeline live here.
+#  No values are hardcoded in any script.
+# ═══════════════════════════════════════════════════════════
+
+
+# ───────────────────────────────────────────────────────────
+#  FILE BACKUPS
+#  Directories to zip and archive.
+#  Add or remove paths as needed.
+# ───────────────────────────────────────────────────────────
+file_backup:
+  sources:
+    - /home/user/documents
+    - /home/user/projects
+    - /etc                        # System config files
+    - /var/www/html               # Web root (if applicable)
+
+  destination: /var/backups/backup_tool/files
+
+  archive_prefix: backup          # Output: backup_2025-01-15_02-00-00.zip
+
+
+# ───────────────────────────────────────────────────────────
+#  SYSTEM SNAPSHOTS (LVM)
+#  Requires root. Volume group and logical volume must exist.
+#  Run: `sudo vgs` to find your volume group name
+#  Run: `sudo lvs` to find your logical volume name
+# ───────────────────────────────────────────────────────────
+snapshot:
+  enabled: true
+
+  lvm:
+    volume_group: rhel             # Replace with your VG name (sudo vgs)
+    logical_volume: root           # Replace with your LV name (sudo lvs)
+    snapshot_name: backup_snap     # Temporary snapshot — created and removed each run
+    snapshot_size: 5G              # Must be large enough to capture changes during backup
+    mount_point: /mnt/backup_snap  # Temporary mount — created and removed each run
+
+  destination: /var/backups/backup_tool/snapshots
+
+  archive_prefix: snapshot         # Output: snapshot_2025-01-15_02-00-00.tar.gz
+
+
+# ───────────────────────────────────────────────────────────
+#  RETENTION / ROTATION POLICY
+#  Applies to both file backups and snapshots.
+# ───────────────────────────────────────────────────────────
+retention:
+  days: 7                          # Archives older than this are deleted
+
+
+# ───────────────────────────────────────────────────────────
+#  EXTERNAL DRIVE TRANSFER
+#  rsync'd to after every successful backup run.
+#  If the drive is not mounted, transfer is skipped with a warning.
+# ───────────────────────────────────────────────────────────
+transfer:
+  enabled: true
+  drive_mount_path: /mnt/external_backup   # Where your external drive mounts
+
+
+# ───────────────────────────────────────────────────────────
+#  EMAIL REPORTING
+#  Uses SMTP with TLS. Sends a unified report after every run.
+#  For Gmail: enable 2FA and generate an App Password.
+#  https://myaccount.google.com/apppasswords
+# ───────────────────────────────────────────────────────────
+email:
+  enabled: true
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+  use_tls: true
+  sender: your_email@gmail.com
+  password: your_app_password_here
+  recipients:
+    - admin@yourdomain.com
+
+
+# ───────────────────────────────────────────────────────────
+#  LOGGING
+# ───────────────────────────────────────────────────────────
+logging:
+  log_file: /var/log/backup_tool/backup.log
